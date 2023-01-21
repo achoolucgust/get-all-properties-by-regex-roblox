@@ -1,3 +1,4 @@
+const fs = require('fs');
 const regex = /(^.*	Property.*$)/gm;
 
 // Alternative syntax using RegExp constructor
@@ -4235,8 +4236,8 @@ Enum ZIndexBehavior
 	EnumItem ZIndexBehavior.Global : 0
 	EnumItem ZIndexBehavior.Sibling : 1`;
 let m;
-var final = "{"
-
+var final = {}
+var last = ""
 while ((m = regex.exec(str)) !== null) {
     // This is necessary to avoid infinite loops with zero-width matches
     if (m.index === regex.lastIndex) {
@@ -4245,10 +4246,18 @@ while ((m = regex.exec(str)) !== null) {
     
     
     // The result can be accessed through the `m`-variable.
+    var d = true
     m.forEach((match, groupIndex) => {
         values = match.split(" ")[2].split(".")
-        final = final + `["${values[0]}"] = "${values[1]}",`;
+        if (final[values[0]] === undefined) {
+            final[values[0]] = [values[1]]
+        } else {
+            if (last !== values[1]) {
+                final[values[0]].push(values[1]);
+            }
+        }
+        last = values[1]
     });
 }
 
-console.log(final + "}")
+console.log(JSON.stringify(final).replaceAll(":","=").replaceAll("[","{").replaceAll("]","}"))
